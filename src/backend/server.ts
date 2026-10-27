@@ -14,7 +14,8 @@ import * as dotenv from 'dotenv';
 import { EmployerRepository } from './repositories/employer.repository';
 import { EmployerService } from './services/employer.service';
 import { createExpressSearchHandler } from './controllers/employer.controller';
-import { checkDatabaseConnection, closeDatabasePool } from '../common/database';
+import { checkDatabaseConnection, closeDatabasePool, query } from '../common/database';
+import { runMigration } from '../etl/init-db';
 import { syncScheduler } from '../sync/sync-scheduler';
 
 dotenv.config();
@@ -117,29 +118,54 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   });
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`\n======================================================`);
-  console.log(`  🚀 E-Verify Interactive GUI: http://localhost:${PORT}`);
-  console.log(`  🔍 Search API Endpoint:      http://localhost:${PORT}/api/employers/search?q=google`);
-  console.log(`  💓 Health Check Probe:       http://localhost:${PORT}/health`);
-  console.log(`  ⏰ Sync Scheduler Status:    http://localhost:${PORT}/api/sync/status`);
-  console.log(`======================================================\n`);
+async function bootstrap() {
+  console.log('[BOOTSTRAP] Connecting to database and running auto-migrations...');
+  try {
+    await runMigration();
+  } catch (err) {
+    console.warn('[BOOTSTRAP WARNING] Migration auto-run note:', (err as Error).message);
+  }
 
-  // Start daily background synchronization scheduler (2:15 AM ET daily refresh)
-  syncScheduler.startScheduler();
-});
+  // Auto-seed/auto-sync if database is freshly created and empty
+  try {
+    const countRes = await query<{ count: string }>('SELECT COUNT(*)::text as count FROM verified_employers');
+    const count = parseInt(countRes.rows[0]?.count || '0', 10);
+    if (count === 0) {
+      console.log('[BOOTSTRAP] Database is empty (0 records). Initializing automatic background sync...');
+      syncScheduler.executeSync(false).catch((e) => console.error('[BOOTSTRAP SYNC ERROR]:', e));
+    } else {
+      console.log(`[BOOTSTRAP] Database populated with ${count.toLocaleString()} verified employer records.`);
+    }
+  } catch (e) {
+    console.warn('[BOOTSTRAP RECORD CHECK]:', (e as Error).message);
+  }
 
-// Graceful shutdown handling
-const shutdown = async (signal: string) => {
-  console.log(`\n[SERVER] Received ${signal}. Shutting down HTTP server and database pool...`);
-  server.close(async () => {
-    await closeDatabasePool();
-    console.log('[SERVER] Server shut down gracefully.');
-    process.exit(0);
+  const server = app.listen(PORT, () => {
+    console.log(`\n======================================================`);
+    console.log(`  🚀 E-Verify Interactive GUI: http://localhost:${PORT}`);
+    console.log(`  🔍 Search API Endpoint:      http://localhost:${PORT}/api/employers/search?q=google`);
+    console.log(`  💓 Health Check Probe:       http://localhost:${PORT}/health`);
+    console.log(`  ⏰ Sync Scheduler Status:    http://localhost:${PORT}/api/sync/status`);
+    console.log(`======================================================\n`);
+
+    // Start daily background synchronization scheduler (2:15 AM ET daily refresh)
+    syncScheduler.startScheduler();
   });
-};
 
-process.on('SIGINT', () => shutdown('SIGINT'));
-process.on('SIGTERM', () => shutdown('SIGTERM'));
+  // Graceful shutdown handling
+  const shutdown = async (signal: string) => {
+    console.log(`\n[SERVER] Received ${signal}. Shutting down HTTP server and database pool...`);
+    server.close(async () => {
+      await closeDatabasePool();
+      console.log('[SERVER] Server shut down gracefully.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+}
+
+bootstrap();
 
 export default app;
