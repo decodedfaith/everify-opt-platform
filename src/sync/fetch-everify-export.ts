@@ -88,7 +88,16 @@ async function triggerCrosstabDownload(page: Page): Promise<Download> {
 export async function fetchEVerifyExport(outDir = path.resolve(process.cwd(), 'data/downloads')): Promise<FetchResult> {
   fs.mkdirSync(outDir, { recursive: true });
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--no-zygote',
+    ],
+  });
   try {
     const context = await browser.newContext({
       userAgent: USER_AGENT,

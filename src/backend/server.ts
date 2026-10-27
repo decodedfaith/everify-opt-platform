@@ -8,9 +8,11 @@
  */
 
 import 'reflect-metadata';
+import * as fs from 'fs';
 import * as path from 'path';
 import express, { Request, Response, NextFunction } from 'express';
 import * as dotenv from 'dotenv';
+import { runStreamingETL } from '../etl/etl';
 import { EmployerRepository } from './repositories/employer.repository';
 import { EmployerService } from './services/employer.service';
 import { createExpressSearchHandler } from './controllers/employer.controller';
@@ -131,7 +133,17 @@ async function bootstrap() {
     const countRes = await query<{ count: string }>('SELECT COUNT(*)::text as count FROM verified_employers');
     const count = parseInt(countRes.rows[0]?.count || '0', 10);
     if (count === 0) {
-      console.log('[BOOTSTRAP] Database is empty (0 records). Initializing automatic background sync...');
+      console.log('[BOOTSTRAP] Database is empty (0 records). Seeding baseline verified employers...');
+      const sampleCsvPath = path.resolve(process.cwd(), 'data/sample_everify_data.csv');
+      if (fs.existsSync(sampleCsvPath)) {
+        try {
+          await runStreamingETL({ csvFilePath: sampleCsvPath, batchSize: 50 });
+          console.log('[BOOTSTRAP] Baseline seed completed! Google, Microsoft, Apple, Amazon, Tesla, etc. are now immediately searchable.');
+        } catch (seedErr) {
+          console.warn('[BOOTSTRAP SEED ERROR]:', (seedErr as Error).message);
+        }
+      }
+      console.log('[BOOTSTRAP] Launching full USCIS synchronization in background...');
       syncScheduler.executeSync(false).catch((e) => console.error('[BOOTSTRAP SYNC ERROR]:', e));
     } else {
       console.log(`[BOOTSTRAP] Database populated with ${count.toLocaleString()} verified employer records.`);
