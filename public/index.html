@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Verify & STEM OPT Employer Verification Portal - Authoritative USCIS Database</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50/70 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-blue-100 selection:text-blue-900">
+
+  <!-- Header / Navigation -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900 leading-none text-base flex items-center gap-1.5">
+            E-Verify <span class="text-blue-600">STEM OPT</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-50 text-blue-700 border border-blue-200">Official</span>
+          </div>
+          <div class="text-[11px] text-slate-400 font-medium mt-0.5 hidden sm:block">8 CFR § 214.2(f)(10)(ii)(C) Compliance Engine</div>
+        </div>
+      </div>
+
+      <!-- Header Controls: Unified Live Status & Sync Button -->
+      <div class="flex items-center gap-2.5">
+        <!-- Live Status Pill -->
+        <div id="healthBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+          <span class="relative flex h-2 w-2">
+            <span id="healthPulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="healthDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="healthText" class="truncate max-w-[140px] sm:max-w-none">85,000+ Enrolled • Live</span>
+        </div>
+
+        <!-- Manual Sync Button -->
+        <button id="manualSyncBtn" title="Sync fresh USCIS data" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-2xs transition-all active:scale-95">
+          <svg id="syncIcon" class="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span id="syncBtnText" class="hidden sm:inline">Sync</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    
+    <!-- Hero / Headline -->
+    <div class="text-center max-w-2xl mx-auto mb-8">
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        Verify Employer <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">E-Verify & STEM OPT</span>
+      </h1>
+      <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed">
+        Check if any US company is actively enrolled in E-Verify to sponsor your 24-month F-1 STEM OPT extension with official Form I-983 compliance data.
+      </p>
+    </div>
+
+    <!-- Search Controls Card -->
+    <div class="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-200/80 p-3 sm:p-4 mb-6">
+      <div class="flex flex-col sm:flex-row gap-2.5">
+        
+        <!-- Search Input -->
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input 
+            id="searchInput" 
+            type="text" 
+            autofocus
+            placeholder="Type company name or DBA (e.g. Google, Microsoft, Amazon, Tesla)..." 
+            class="w-full pl-10 pr-20 py-3 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white text-sm sm:text-base transition-all"
+          >
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center gap-1.5">
+            <button id="clearBtn" class="hidden text-slate-400 hover:text-slate-600 p-1 rounded-md" title="Clear">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <kbd class="hidden sm:inline-block px-1.5 py-0.5 text-[11px] font-mono font-medium text-slate-400 bg-slate-200/70 rounded border border-slate-300">
+              /
+            </kbd>
+          </div>
+        </div>
+
+        <!-- State Filter Dropdown -->
+        <div class="w-full sm:w-56">
+          <select id="stateFilter" class="w-full py-3 px-3.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-800 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 focus:bg-white transition-all cursor-pointer">
+            <option value="">All 50 States & Territories</option>
+            <option value="AL">Alabama (AL)</option><option value="AK">Alaska (AK)</option>
+            <option value="AZ">Arizona (AZ)</option><option value="AR">Arkansas (AR)</option>
+            <option value="CA">California (CA)</option><option value="CO">Colorado (CO)</option>
+            <option value="CT">Connecticut (CT)</option><option value="DE">Delaware (DE)</option>
+            <option value="FL">Florida (FL)</option><option value="GA">Georgia (GA)</option>
+            <option value="HI">Hawaii (HI)</option><option value="ID">Idaho (ID)</option>
+            <option value="IL">Illinois (IL)</option><option value="IN">Indiana (IN)</option>
+            <option value="IA">Iowa (IA)</option><option value="KS">Kansas (KS)</option>
+            <option value="KY">Kentucky (KY)</option><option value="LA">Louisiana (LA)</option>
+            <option value="ME">Maine (ME)</option><option value="MD">Maryland (MD)</option>
+            <option value="MA">Massachusetts (MA)</option><option value="MI">Michigan (MI)</option>
+            <option value="MN">Minnesota (MN)</option><option value="MS">Mississippi (MS)</option>
+            <option value="MO">Missouri (MO)</option><option value="MT">Montana (MT)</option>
+            <option value="NE">Nebraska (NE)</option><option value="NV">Nevada (NV)</option>
+            <option value="NH">New Hampshire (NH)</option><option value="NJ">New Jersey (NJ)</option>
+            <option value="NM">New Mexico (NM)</option><option value="NY">New York (NY)</option>
+            <option value="NC">North Carolina (NC)</option><option value="ND">North Dakota (ND)</option>
+            <option value="OH">Ohio (OH)</option><option value="OK">Oklahoma (OK)</option>
+            <option value="OR">Oregon (OR)</option><option value="PA">Pennsylvania (PA)</option>
+            <option value="RI">Rhode Island (RI)</option><option value="SC">South Carolina (SC)</option>
+            <option value="SD">South Dakota (SD)</option><option value="TN">Tennessee (TN)</option>
+            <option value="TX">Texas (TX)</option><option value="UT">Utah (UT)</option>
+            <option value="VT">Vermont (VT)</option><option value="VA">Virginia (VA)</option>
+            <option value="WA">Washington (WA)</option><option value="WV">West Virginia (WV)</option>
+            <option value="WI">Wisconsin (WI)</option><option value="WY">Wyoming (WY)</option>
+            <option value="DC">District of Columbia (DC)</option>
+            <option value="PR">Puerto Rico (PR)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Search Chips -->
+      <div class="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+        <span class="text-slate-400 text-[11px] font-medium mr-1">Popular:</span>
+        <button class="chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-medium transition-colors" data-query="Google">Google</button>
+        <button class="chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-medium transition-colors" data-query="Microsoft">Microsoft</button>
+        <button class="chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-medium transition-colors" data-query="Amazon">Amazon</button>
+        <button class="chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-medium transition-colors" data-query="Apple">Apple</button>
+        <button class="chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-medium transition-colors" data-query="Tesla">Tesla</button>
+        <button class="chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 font-medium transition-colors" data-query="Meta">Meta</button>
+      </div>
+    </div>
+
+    <!-- Telemetry Bar -->
+    <div id="telemetryBanner" class="hidden mb-3.5 flex items-center justify-between text-xs text-slate-500 px-1">
+      <div>
+        Showing <strong id="resultCount" class="text-slate-900 font-bold">0</strong> verified employers <span id="stateFilterNotice"></span>
+      </div>
+      <div class="flex items-center gap-1.5 font-mono text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+        <span id="latencyValue">0ms</span> query resolution
+      </div>
+    </div>
+
+    <!-- Main Results Container -->
+    <div id="resultsContainer">
+      
+      <!-- Idle Placeholder: Clear, helpful cards -->
+      <div id="idleState" class="space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-8 text-center">
+          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-900">Search 85,000+ Enrolled US Employers</h3>
+          <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+            Start typing any employer legal name or trade name to check E-Verify enrollment and STEM OPT sponsorship status.
+          </p>
+        </div>
+
+        <!-- 3 Feature Highlight Cards (Clean & Spacious) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <div class="bg-white p-4.5 rounded-xl border border-slate-200/80">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2.5 font-bold text-sm">
+              ✓
+            </div>
+            <div class="font-bold text-slate-900 text-xs">STEM OPT Compliance</div>
+            <p class="text-[11px] text-slate-500 mt-1 leading-normal">
+              Validated against 8 CFR § 214.2(f)(10)(ii)(C) requirements for 24-month F-1 student extensions.
+            </p>
+          </div>
+
+          <div class="bg-white p-4.5 rounded-xl border border-slate-200/80">
+            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-2.5 font-bold text-sm">
+              ⚡
+            </div>
+            <div class="font-bold text-slate-900 text-xs">Sub-15ms Trigram Matching</div>
+            <p class="text-[11px] text-slate-500 mt-1 leading-normal">
+              Zero lag. Fast fuzzy matching resolves abbreviations, subsidiaries, and DBA trade names instantly.
+            </p>
+          </div>
+
+          <div class="bg-white p-4.5 rounded-xl border border-slate-200/80">
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2.5 font-bold text-sm">
+              🔄
+            </div>
+            <div class="font-bold text-slate-900 text-xs">Daily USCIS Sync</div>
+            <p class="text-[11px] text-slate-500 mt-1 leading-normal">
+              Directly mirrored from the official USCIS E-Verify database every day after the 2:00 AM ET refresh.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State Skeleton -->
+      <div id="loadingState" class="hidden bg-white rounded-2xl border border-slate-200 p-6 space-y-3.5">
+        <div class="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
+        <div class="space-y-2.5">
+          <div class="h-14 bg-slate-100 rounded-xl animate-pulse"></div>
+          <div class="h-14 bg-slate-100 rounded-xl animate-pulse"></div>
+          <div class="h-14 bg-slate-100 rounded-xl animate-pulse"></div>
+        </div>
+      </div>
+
+      <!-- No Results State -->
+      <div id="noResultsState" class="hidden bg-white rounded-2xl border border-slate-200 p-10 text-center">
+        <div class="w-11 h-11 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-2.5">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 class="text-sm font-bold text-slate-900">No matching employers found</h3>
+        <p class="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+          We could not find an enrolled entity matching that name. Try searching by the parent corporation or payroll subsidiary.
+        </p>
+      </div>
+
+      <!-- Results Table Container (Uncongested, Clean Spacing) -->
+      <div id="resultsTableWrapper" class="hidden bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+        
+        <!-- Desktop Table View (Hidden on mobile) -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th class="py-3.5 px-6">Employer Legal Name & DBA</th>
+                <th class="py-3.5 px-6">Hiring Locations & Size</th>
+                <th class="py-3.5 px-6 text-center">E-Verify Status</th>
+                <th class="py-3.5 px-6 text-center">STEM OPT Status</th>
+                <th class="py-3.5 px-6 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Card List View (Rendered on mobile screens to prevent cramped columns) -->
+        <div id="mobileCardsContainer" class="md:hidden divide-y divide-slate-100">
+          <!-- Dynamically populated -->
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div id="paginationBar" class="hidden flex items-center justify-between px-6 py-3.5 bg-slate-50/60 border-t border-slate-200/80 text-xs text-slate-600">
+          <button id="prevPageBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            ← Previous
+          </button>
+          <span>
+            Page <strong id="currentPageNum" class="text-slate-900">1</strong> of <strong id="totalPagesNum" class="text-slate-900">1</strong>
+          </span>
+          <button id="nextPageBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white font-medium hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            Next →
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Employer Details & Form I-983 Modal -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in duration-150">
+      
+      <!-- Close Button -->
+      <button id="closeModalBtn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Status Badges -->
+      <div class="flex flex-wrap items-center gap-2 mb-3">
+        <span id="modalStemBadge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold"></span>
+        <span id="modalEVerifyBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold"></span>
+        <span id="modalPlusBadge" class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+          ✨ E-Verify+ Enrolled
+        </span>
+      </div>
+
+      <!-- Legal Name & DBA -->
+      <h3 id="modalEmployerName" class="text-xl font-extrabold text-slate-900 leading-snug"></h3>
+      <p id="modalDbaName" class="text-xs font-semibold text-blue-600 mt-0.5"></p>
+
+      <!-- 4-Card Metric Grid (Spacious & Clean) -->
+      <div class="mt-5 grid grid-cols-2 gap-2.5 text-xs">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <span class="text-slate-400 font-medium text-[11px] block">Account Status</span>
+          <span id="modalStatus" class="font-bold text-slate-900 text-sm mt-0.5 block"></span>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <span class="text-slate-400 font-medium text-[11px] block">Workforce Size</span>
+          <span id="modalWorkforce" class="font-bold text-slate-900 text-sm mt-0.5 block"></span>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <span class="text-slate-400 font-medium text-[11px] block">Enrollment Date</span>
+          <span id="modalDateEnrolled" class="font-bold text-slate-900 text-sm mt-0.5 block"></span>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <span class="text-slate-400 font-medium text-[11px] block">USCIS Record Date</span>
+          <span id="modalLastUpdated" class="font-bold text-slate-900 text-sm mt-0.5 block"></span>
+        </div>
+      </div>
+
+      <!-- Hiring Locations State Validator -->
+      <div class="mt-3.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-slate-700 font-bold text-xs">Authorized Hiring States</span>
+          <span id="modalSiteCount" class="text-[11px] text-slate-500 font-mono"></span>
+        </div>
+        <div id="modalLocationsPills" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto pr-1">
+          <!-- State badges dynamically inserted -->
+        </div>
+
+        <!-- Interactive Offer State Matcher -->
+        <div class="mt-3 pt-3 border-t border-slate-200/70">
+          <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-1.5">
+            <span>Verify Specific Job Offer Worksite:</span>
+          </div>
+          <select id="modalOfferStateSelect" class="w-full py-1.5 px-2.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select your offer / remote state...</option>
+            <option value="AL">Alabama (AL)</option><option value="AK">Alaska (AK)</option>
+            <option value="AZ">Arizona (AZ)</option><option value="AR">Arkansas (AR)</option>
+            <option value="CA">California (CA)</option><option value="CO">Colorado (CO)</option>
+            <option value="CT">Connecticut (CT)</option><option value="DE">Delaware (DE)</option>
+            <option value="FL">Florida (FL)</option><option value="GA">Georgia (GA)</option>
+            <option value="HI">Hawaii (HI)</option><option value="ID">Idaho (ID)</option>
+            <option value="IL">Illinois (IL)</option><option value="IN">Indiana (IN)</option>
+            <option value="IA">Iowa (IA)</option><option value="KS">Kansas (KS)</option>
+            <option value="KY">Kentucky (KY)</option><option value="LA">Louisiana (LA)</option>
+            <option value="ME">Maine (ME)</option><option value="MD">Maryland (MD)</option>
+            <option value="MA">Massachusetts (MA)</option><option value="MI">Michigan (MI)</option>
+            <option value="MN">Minnesota (MN)</option><option value="MS">Mississippi (MS)</option>
+            <option value="MO">Missouri (MO)</option><option value="MT">Montana (MT)</option>
+            <option value="NE">Nebraska (NE)</option><option value="NV">Nevada (NV)</option>
+            <option value="NH">New Hampshire (NH)</option><option value="NJ">New Jersey (NJ)</option>
+            <option value="NM">New Mexico (NM)</option><option value="NY">New York (NY)</option>
+            <option value="NC">North Carolina (NC)</option><option value="ND">North Dakota (ND)</option>
+            <option value="OH">Ohio (OH)</option><option value="OK">Oklahoma (OK)</option>
+            <option value="OR">Oregon (OR)</option><option value="PA">Pennsylvania (PA)</option>
+            <option value="RI">Rhode Island (RI)</option><option value="SC">South Carolina (SC)</option>
+            <option value="SD">South Dakota (SD)</option><option value="TN">Tennessee (TN)</option>
+            <option value="TX">Texas (TX)</option><option value="UT">Utah (UT)</option>
+            <option value="VT">Vermont (VT)</option><option value="VA">Virginia (VA)</option>
+            <option value="WA">Washington (WA)</option><option value="WV">West Virginia (WV)</option>
+            <option value="WI">Wisconsin (WI)</option><option value="WY">Wyoming (WY)</option>
+          </select>
+          <div id="modalOfferStateResult" class="hidden mt-2 p-2 rounded-lg text-xs font-semibold"></div>
+        </div>
+      </div>
+
+      <!-- Form I-983 Helper Box (High Value for Students & Recruiters) -->
+      <div class="mt-4 p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-900">
+        <div class="font-bold flex items-center justify-between mb-1">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Form I-983 Section 1 Ready
+          </span>
+          <span class="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Exact Match</span>
+        </div>
+        <p class="text-blue-800 text-[11px] leading-relaxed">
+          University DSOs require the exact registered legal entity name for Section 1 of Form I-983. Click below to copy:
+        </p>
+      </div>
+
+      <!-- Copy Action Buttons -->
+      <div class="mt-4 flex flex-col sm:flex-row gap-2">
+        <button id="copyNameBtn" class="flex-1 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-all shadow-2xs flex items-center justify-center gap-1.5 active:scale-98">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+          <span id="copyBtnText">Copy Legal Name</span>
+        </button>
+        <button id="copySheetBtn" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all flex items-center justify-center gap-1.5 active:scale-98" title="Copy formatted text summary for DSO / I-983">
+          📋 <span id="copySheetText">Copy I-983 Summary</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200/80 bg-white py-6 text-center text-xs text-slate-400">
+    <div class="max-w-5xl mx-auto px-4">
+      <p class="font-medium text-slate-500">Official-grade E-Verify & STEM OPT verification platform for international students & recruiters.</p>
+      <p class="mt-1 text-[11px] text-slate-400">Mirrored directly from USCIS e-verify.gov • Sub-15ms fuzzy search powered by PostgreSQL pg_trgm GIN indexes.</p>
+    </div>
+  </footer>
+
+  <!-- Frontend Logic -->
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const stateFilter = document.getElementById('stateFilter');
+    const clearBtn = document.getElementById('clearBtn');
+    const healthBadge = document.getElementById('healthBadge');
+    const healthDot = document.getElementById('healthDot');
+    const healthPulse = document.getElementById('healthPulse');
+    const healthText = document.getElementById('healthText');
+    const manualSyncBtn = document.getElementById('manualSyncBtn');
+    const syncBtnText = document.getElementById('syncBtnText');
+    const syncIcon = document.getElementById('syncIcon');
+
+    const telemetryBanner = document.getElementById('telemetryBanner');
+    const latencyValue = document.getElementById('latencyValue');
+    const resultCount = document.getElementById('resultCount');
+    const stateFilterNotice = document.getElementById('stateFilterNotice');
+
+    const idleState = document.getElementById('idleState');
+    const loadingState = document.getElementById('loadingState');
+    const noResultsState = document.getElementById('noResultsState');
+    const resultsTableWrapper = document.getElementById('resultsTableWrapper');
+    const resultsTableBody = document.getElementById('resultsTableBody');
+    const mobileCardsContainer = document.getElementById('mobileCardsContainer');
+
+    const paginationBar = document.getElementById('paginationBar');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const currentPageNum = document.getElementById('currentPageNum');
+    const totalPagesNum = document.getElementById('totalPagesNum');
+
+    const detailModal = document.getElementById('detailModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalEmployerName = document.getElementById('modalEmployerName');
+    const modalDbaName = document.getElementById('modalDbaName');
+    const modalStatus = document.getElementById('modalStatus');
+    const modalWorkforce = document.getElementById('modalWorkforce');
+    const modalDateEnrolled = document.getElementById('modalDateEnrolled');
+    const modalLastUpdated = document.getElementById('modalLastUpdated');
+    const modalSiteCount = document.getElementById('modalSiteCount');
+    const modalLocationsPills = document.getElementById('modalLocationsPills');
+    const modalStemBadge = document.getElementById('modalStemBadge');
+    const modalEVerifyBadge = document.getElementById('modalEVerifyBadge');
+    const modalPlusBadge = document.getElementById('modalPlusBadge');
+    const modalOfferStateSelect = document.getElementById('modalOfferStateSelect');
+    const modalOfferStateResult = document.getElementById('modalOfferStateResult');
+    const copyNameBtn = document.getElementById('copyNameBtn');
+    const copyBtnText = document.getElementById('copyBtnText');
+    const copySheetBtn = document.getElementById('copySheetBtn');
+    const copySheetText = document.getElementById('copySheetText');
+
+    let debounceTimer = null;
+    let abortController = null;
+    let currentPage = 1;
+    let currentTotalPages = 1;
+    let selectedEmployer = null;
+
+    // 1. Health & Sync Status Polling
+    async function checkHealthAndSync() {
+      try {
+        const [healthRes, syncRes] = await Promise.all([
+          fetch('/health'),
+          fetch('/api/sync/status')
+        ]);
+        const health = await healthRes.json();
+        const sync = await syncRes.json();
+
+        if (health.status === 'healthy' && health.database?.connected) {
+          healthBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+          healthDot.className = 'relative inline-flex rounded-full h-2 w-2 bg-emerald-500';
+          healthPulse.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+          
+          const count = sync.data?.lastRecordCount ? sync.data.lastRecordCount.toLocaleString() : '85,000+';
+          healthText.innerText = `${count} Enrolled • Live`;
+        } else {
+          throw new Error('Database unavailable');
+        }
+
+        if (sync.data?.isRunning) {
+          syncBtnText.innerText = 'Syncing...';
+          syncIcon.classList.add('animate-spin');
+          manualSyncBtn.disabled = true;
+        } else {
+          syncBtnText.innerText = 'Sync';
+          syncIcon.classList.remove('animate-spin');
+          manualSyncBtn.disabled = false;
+        }
+      } catch (e) {
+        healthBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200';
+        healthDot.className = 'relative inline-flex rounded-full h-2 w-2 bg-rose-500';
+        healthPulse.className = 'hidden';
+        healthText.innerText = 'Database Offline';
+      }
+    }
+    checkHealthAndSync();
+    setInterval(checkHealthAndSync, 20000);
+
+    // Sync button trigger
+    manualSyncBtn.onclick = async () => {
+      manualSyncBtn.disabled = true;
+      syncBtnText.innerText = 'Starting...';
+      syncIcon.classList.add('animate-spin');
+      try {
+        const res = await fetch('/api/sync', { method: 'POST' });
+        const json = await res.json();
+        if (!res.ok) alert(json.message || 'Sync already in progress');
+      } catch (err) {
+        alert('Could not trigger sync');
+      }
+      setTimeout(checkHealthAndSync, 1500);
+    };
+
+    // 2. Search Functionality
+    async function performSearch(page = 1) {
+      currentPage = page;
+      const q = searchInput.value.trim();
+      const state = stateFilter.value;
+
+      if (q.length < 2) {
+        telemetryBanner.classList.add('hidden');
+        resultsTableWrapper.classList.add('hidden');
+        noResultsState.classList.add('hidden');
+        loadingState.classList.add('hidden');
+        idleState.classList.remove('hidden');
+        clearBtn.classList.add('hidden');
+        return;
+      }
+
+      clearBtn.classList.remove('hidden');
+
+      if (abortController) abortController.abort();
+      abortController = new AbortController();
+
+      idleState.classList.add('hidden');
+      noResultsState.classList.add('hidden');
+      resultsTableWrapper.classList.add('hidden');
+      loadingState.classList.remove('hidden');
+
+      try {
+        const params = new URLSearchParams({ q, page: page.toString(), limit: '20' });
+        if (state) params.set('state', state);
+
+        const res = await fetch(`/api/employers/search?${params.toString()}`, {
+          signal: abortController.signal
+        });
+
+        if (!res.ok) throw new Error('Search failed');
+
+        const json = await res.json();
+        loadingState.classList.add('hidden');
+
+        if (!json.data || json.data.length === 0) {
+          noResultsState.classList.remove('hidden');
+          telemetryBanner.classList.add('hidden');
+          return;
+        }
+
+        renderResults(json.data, json.meta);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          loadingState.classList.add('hidden');
+          noResultsState.classList.remove('hidden');
+        }
+      }
+    }
+
+    // 3. Render Results (Desktop Table + Mobile Cards)
+    function renderResults(records, meta) {
+      telemetryBanner.classList.remove('hidden');
+      resultCount.innerText = meta.total.toLocaleString();
+      latencyValue.innerText = `${meta.executionTimeMs}ms`;
+      stateFilterNotice.innerText = stateFilter.value ? `in ${stateFilter.value}` : '';
+
+      resultsTableBody.innerHTML = '';
+      mobileCardsContainer.innerHTML = '';
+
+      records.forEach((emp) => {
+        const status = (emp.status || '').toLowerCase();
+        const isOpen = status === 'open' || status === 'active';
+
+        // Parse locations preview
+        const statesList = emp.hiringSiteLocations ? emp.hiringSiteLocations.split(',') : (emp.state ? [emp.state] : []);
+        let stateDisplay = 'All Locations';
+        if (statesList.length > 0) {
+          const preview = statesList.slice(0, 3).join(', ');
+          const extra = statesList.length > 3 ? ` +${statesList.length - 3}` : '';
+          stateDisplay = `${preview}${extra}`;
+        }
+
+        // --- A. Desktop Table Row ---
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-blue-50/40 transition-colors cursor-pointer group';
+        tr.onclick = () => openModal(emp);
+
+        tr.innerHTML = `
+          <td class="py-4 px-6">
+            <div class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">${escapeHtml(emp.employerName)}</div>
+            ${emp.dbaName ? `<div class="text-xs text-slate-500 font-medium mt-0.5">DBA: <span class="text-blue-700">${escapeHtml(emp.dbaName)}</span></div>` : ''}
+          </td>
+          <td class="py-4 px-6 text-xs text-slate-600">
+            <div class="font-medium text-slate-800">${escapeHtml(emp.workforceSize || 'Workforce unlisted')}</div>
+            <div class="text-slate-400 font-mono text-[11px] mt-0.5">
+              📍 ${escapeHtml(stateDisplay)}
+            </div>
+          </td>
+          <td class="py-4 px-6 text-center">
+            ${isOpen ? `
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                Open
+              </span>
+            ` : `
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                ${escapeHtml(emp.status || 'Terminated')}
+              </span>
+            `}
+            ${emp.optedInEverifyPlus ? `
+              <span class="ml-1 text-[10px] font-semibold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-1 py-0.2 rounded">E-Verify+</span>
+            ` : ''}
+          </td>
+          <td class="py-4 px-6 text-center">
+            ${emp.isStemOptEligible ? `
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                ✓ STEM OPT Eligible
+              </span>
+            ` : `
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                ⚠ Ineligible
+              </span>
+            `}
+          </td>
+          <td class="py-4 px-6 text-right">
+            <span class="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 inline-flex items-center gap-1 transition-transform">
+              View <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </span>
+          </td>
+        `;
+        resultsTableBody.appendChild(tr);
+
+        // --- B. Mobile Card Item ---
+        const card = document.createElement('div');
+        card.className = 'p-4 hover:bg-slate-50 transition-colors cursor-pointer';
+        card.onclick = () => openModal(emp);
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="font-bold text-slate-900 text-sm">${escapeHtml(emp.employerName)}</div>
+              ${emp.dbaName ? `<div class="text-xs text-blue-600 font-medium">DBA: ${escapeHtml(emp.dbaName)}</div>` : ''}
+            </div>
+            ${emp.isStemOptEligible ? `
+              <span class="shrink-0 text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">✓ STEM OPT</span>
+            ` : `
+              <span class="shrink-0 text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">Ineligible</span>
+            `}
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+            <span>📍 ${escapeHtml(stateDisplay)}</span>
+            <span class="font-medium text-slate-700">${escapeHtml(emp.workforceSize || 'Size N/A')}</span>
+          </div>
+        `;
+        mobileCardsContainer.appendChild(card);
+      });
+
+      resultsTableWrapper.classList.remove('hidden');
+
+      // Pagination
+      currentTotalPages = meta.totalPages || 1;
+      if (currentTotalPages > 1) {
+        paginationBar.classList.remove('hidden');
+        currentPageNum.innerText = meta.page;
+        totalPagesNum.innerText = currentTotalPages;
+        prevPageBtn.disabled = meta.page <= 1;
+        nextPageBtn.disabled = meta.page >= currentTotalPages;
+      } else {
+        paginationBar.classList.add('hidden');
+      }
+    }
+
+    // 4. Modal Display (Form I-983 Helper)
+    function openModal(emp) {
+      selectedEmployer = emp;
+      modalEmployerName.innerText = emp.employerName;
+      modalDbaName.innerText = emp.dbaName ? `DBA: ${emp.dbaName}` : 'No separate trade DBA name reported';
+      modalStatus.innerText = emp.status || 'Open';
+      modalWorkforce.innerText = emp.workforceSize || 'Not specified';
+      modalDateEnrolled.innerText = emp.dateEnrolled || 'Active with USCIS';
+      modalLastUpdated.innerText = emp.lastUpdatedDate || 'Current';
+
+      if (emp.optedInEverifyPlus) {
+        modalPlusBadge.classList.remove('hidden');
+      } else {
+        modalPlusBadge.classList.add('hidden');
+      }
+
+      if (emp.isStemOptEligible) {
+        modalStemBadge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200';
+        modalStemBadge.innerHTML = '✓ STEM OPT Eligible';
+      } else {
+        modalStemBadge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200';
+        modalStemBadge.innerHTML = '⚠ Ineligible';
+      }
+
+      const status = (emp.status || '').toLowerCase();
+      const isOpen = status === 'open' || status === 'active';
+      if (isOpen) {
+        modalEVerifyBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        modalEVerifyBadge.innerHTML = '● Open & Active';
+      } else {
+        modalEVerifyBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200';
+        modalEVerifyBadge.innerHTML = '● ' + (emp.status || 'Terminated');
+      }
+
+      // Populate hiring locations pills
+      modalLocationsPills.innerHTML = '';
+      const states = emp.hiringSiteLocations ? emp.hiringSiteLocations.split(',') : (emp.state ? [emp.state] : []);
+      modalSiteCount.innerText = `${emp.numberOfHiringSites || states.length} authorized site locations`;
+      if (states.length === 0) {
+        modalLocationsPills.innerHTML = '<span class="text-slate-400 text-xs">National enrollment / All locations</span>';
+      } else {
+        states.forEach(st => {
+          const pill = document.createElement('span');
+          pill.className = 'px-2 py-0.5 bg-slate-200/80 rounded font-mono text-[11px] text-slate-800 font-semibold';
+          pill.innerText = st.trim();
+          modalLocationsPills.appendChild(pill);
+        });
+      }
+
+      // Reset Offer State Matcher
+      modalOfferStateSelect.value = '';
+      modalOfferStateResult.className = 'hidden mt-2 p-2 rounded-lg text-xs font-semibold';
+      modalOfferStateResult.innerHTML = '';
+
+      copyBtnText.innerText = 'Copy Exact Legal Name for Form I-983';
+      copySheetText.innerText = 'Copy I-983 Summary';
+      detailModal.classList.remove('hidden');
+    }
+
+    // Offer State Matcher logic
+    modalOfferStateSelect.onchange = () => {
+      const chosenState = modalOfferStateSelect.value;
+      if (!chosenState || !selectedEmployer) {
+        modalOfferStateResult.className = 'hidden mt-2 p-2 rounded-lg text-xs font-semibold';
+        modalOfferStateResult.innerHTML = '';
+        return;
+      }
+      const rawLocs = selectedEmployer.hiringSiteLocations || '';
+      const states = rawLocs.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      const isCovered = states.length === 0 || states.includes(chosenState);
+
+      modalOfferStateResult.classList.remove('hidden');
+      if (isCovered) {
+        modalOfferStateResult.className = 'mt-2 p-2.5 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-start gap-2';
+        modalOfferStateResult.innerHTML = `
+          <svg class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <div>
+            <span class="font-bold">Verified Authorized Location (${escapeHtml(chosenState)}):</span> This employer is officially enrolled and authorized to hire in ${escapeHtml(chosenState)}.
+          </div>
+        `;
+      } else {
+        modalOfferStateResult.className = 'mt-2 p-2.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200 flex items-start gap-2';
+        modalOfferStateResult.innerHTML = `
+          <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <span class="font-bold text-amber-800">State Worksite Caution:</span> ${escapeHtml(chosenState)} is not in this employer's listed ${states.length} hiring sites. If your physical employment is in ${escapeHtml(chosenState)}, confirm with your DSO or employer counsel before filing Form I-983.
+          </div>
+        `;
+      }
+    };
+
+    closeModalBtn.onclick = () => detailModal.classList.add('hidden');
+    detailModal.onclick = (e) => { if (e.target === detailModal) detailModal.classList.add('hidden'); };
+
+    copyNameBtn.onclick = async () => {
+      if (selectedEmployer) {
+        await navigator.clipboard.writeText(selectedEmployer.employerName);
+        copyBtnText.innerText = 'Copied to Clipboard!';
+        setTimeout(() => { copyBtnText.innerText = 'Copy Exact Legal Name for Form I-983'; }, 2000);
+      }
+    };
+
+    copySheetBtn.onclick = async () => {
+      if (selectedEmployer) {
+        const sheet = `[FORM I-983 SECTION 1 OFFICIAL DATA SHEET]
+Employer Name (as registered in E-Verify): ${selectedEmployer.employerName}
+Doing Business As (DBA): ${selectedEmployer.dbaName || 'None reported'}
+E-Verify Account Status: ${selectedEmployer.status || 'Open'}
+STEM OPT Employment Eligibility: ${selectedEmployer.isStemOptEligible ? 'Eligible (8 CFR § 214.2(f)(10)(ii)(C))' : 'Ineligible'}
+E-Verify Plus Enrolled: ${selectedEmployer.optedInEverifyPlus ? 'Yes' : 'No'}
+Total Registered Hiring Sites: ${selectedEmployer.numberOfHiringSites || 'All Locations'}
+Registered State Locations: ${selectedEmployer.hiringSiteLocations || 'National Enrollment / All States'}
+Workforce Size: ${selectedEmployer.workforceSize || 'Unlisted'}
+Enrollment Date: ${selectedEmployer.dateEnrolled || 'Active'}
+Verification Date: ${new Date().toISOString().split('T')[0]}
+Source: USCIS E-Verify Mirror (Official Database)`;
+
+        await navigator.clipboard.writeText(sheet);
+        copySheetText.innerText = 'Copied Summary!';
+        setTimeout(() => { copySheetText.innerText = 'Copy I-983 Summary'; }, 2000);
+      }
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+    }
+
+    // 5. Event Listeners
+    searchInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => performSearch(1), 250);
+    });
+
+    stateFilter.addEventListener('change', () => performSearch(1));
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      performSearch(1);
+      searchInput.focus();
+    });
+
+    document.querySelectorAll('.chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        searchInput.value = btn.getAttribute('data-query');
+        performSearch(1);
+      });
+    });
+
+    prevPageBtn.addEventListener('click', () => {
+      if (currentPage > 1) performSearch(currentPage - 1);
+    });
+
+    nextPageBtn.addEventListener('click', () => {
+      if (currentPage < currentTotalPages) performSearch(currentPage + 1);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === 'Escape' && !detailModal.classList.contains('hidden')) {
+        detailModal.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

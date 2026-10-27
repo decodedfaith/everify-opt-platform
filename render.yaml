@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: everify-opt-platform
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: starter
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: everify-db
+          property: connectionString
+      - key: DB_SSL
+        value: "true"
+      - key: DB_POOL_MAX
+        value: "20"
+      - key: DB_IDLE_TIMEOUT_MS
+        value: "30000"
+      - key: DB_CONN_TIMEOUT_MS
+        value: "5000"
+      - key: ETL_BATCH_SIZE
+        value: "1000"
+
+databases:
+  - name: everify-db
+    plan: basic-1gb
+    region: oregon
+    postgresMajorVersion: "16"
