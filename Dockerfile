@@ -26,6 +26,7 @@ FROM node:20-slim
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 # Install Playwright Chromium dependencies for live data extraction
 RUN apt-get update && apt-get install -y --no-install-recommends \
