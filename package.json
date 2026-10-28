@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "migrate": "node dist/src/etl/init-db.js",
+    "enrich": "ts-node src/enrichment/enrich-cli.ts",
     "etl": "ts-node src/etl/etl.ts",
     "sync": "ts-node src/sync/fetch-everify-export.ts",
     "start": "node dist/src/backend/server.js",

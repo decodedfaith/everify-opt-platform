@@ -33,6 +33,19 @@ export interface Employer {
 /**
  * Employer search result entity enriched with relevance and eligibility metrics.
  */
+export interface CompanyEnrichment {
+  domain: string;
+  displayName: string;
+  websiteUrl: string;
+  careersUrl: string | null;
+  atsType: string | null;
+  /** Number of live open roles; null when we have no readable job feed. */
+  openRoles: number | null;
+  jobsSyncedAt: string | null;
+  /** 0-100 confidence the website belongs to this employer. */
+  confidence: number;
+}
+
 export interface EmployerWithScore extends Employer {
   /**
    * PostgreSQL pg_trgm similarity score between 0.00 and 1.00.
@@ -45,6 +58,9 @@ export interface EmployerWithScore extends Employer {
    * extension must be employed by an employer currently enrolled in E-Verify in good standing.
    */
   isStemOptEligible: boolean;
+
+  /** Real company website + hiring data; null when not (yet) resolved. */
+  enrichment: CompanyEnrichment | null;
 }
 
 /**
@@ -70,6 +86,11 @@ export interface SearchEmployersParams {
    * Current page index (1-based, default: 1).
    */
   page?: number;
+
+  /**
+   * Only return employers with at least one live open role.
+   */
+  hiringOnly?: boolean;
 }
 
 /**

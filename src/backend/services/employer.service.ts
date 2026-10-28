@@ -10,6 +10,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EmployerRepository } from '../repositories/employer.repository';
 import {
+  CompanyEnrichment,
   EmployerWithScore,
   SearchEmployersParams,
   SearchEmployersResult,
@@ -40,11 +41,12 @@ export class EmployerService implements IEmployerService {
       state: params.state,
       limit,
       page,
+      hiringOnly: params.hiringOnly ?? false,
     });
 
     const elapsedNs = process.hrtime.bigint() - startTime;
     const executionTimeMs = Number(elapsedNs) / 1_000_000;
-    this.logger.debug(`Resolved query "${params.q}" (${records.length} items, ${total} total) in ${executionTimeMs.toFixed(2)}ms`);
+    this.logger.debug(`Resolved query \"${params.q}\" (${records.length} items, ${total} total) in ${executionTimeMs.toFixed(2)}ms`);
 
     const data: EmployerWithScore[] = records.map((r) => {
       // STEM OPT Rule: F-1 students on 24-month STEM OPT extensions require an employer
@@ -52,6 +54,20 @@ export class EmployerService implements IEmployerService {
       // USCIS classifies active accounts as 'Open' (or 'Active').
       const statusLower = r.status.trim().toLowerCase();
       const isStemOptEligible = statusLower === 'open' || statusLower === 'active';
+
+      const enrichment: CompanyEnrichment | null =
+        r.company_domain && r.website_url
+          ? {
+              domain: r.company_domain,
+              displayName: r.company_display_name || r.company_domain,
+              websiteUrl: r.website_url,
+              careersUrl: r.careers_url ?? null,
+              atsType: r.ats_type ?? null,
+              openRoles: r.ats_type ? (r.active_job_count ?? 0) : null,
+              jobsSyncedAt: r.jobs_synced_at ? new Date(r.jobs_synced_at).toISOString() : null,
+              confidence: r.enrichment_confidence ?? 0,
+            }
+          : null;
 
       return {
         id: r.id,
@@ -73,6 +89,7 @@ export class EmployerService implements IEmployerService {
         updatedAt: r.updated_at,
         similarityScore: r.similarity_score ?? 0,
         isStemOptEligible,
+        enrichment,
       };
     });
 

@@ -2,23 +2,28 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { query, pool } from '../common/database';
 
-export async function runMigration(): Promise<void> {
-  const candidatePaths = [
-    path.resolve(process.cwd(), 'sql/001_init_schema.sql'),
-    path.resolve(__dirname, '../../../sql/001_init_schema.sql'),
-    path.resolve(__dirname, '../../sql/001_init_schema.sql'),
+/** Ordered, idempotent schema files (002 is sample seed data and is intentionally excluded). */
+const MIGRATION_FILES = ['001_init_schema.sql', '003_enrichment.sql'];
+
+function locate(file: string): string {
+  const candidates = [
+    path.resolve(process.cwd(), 'sql', file),
+    path.resolve(__dirname, '../../../sql', file),
+    path.resolve(__dirname, '../../sql', file),
   ];
-
-  const sqlPath = candidatePaths.find(p => fs.existsSync(p));
-  if (!sqlPath) {
-    throw new Error(`Schema file not found in candidates: ${candidatePaths.join(', ')}`);
+  const found = candidates.find((p) => fs.existsSync(p));
+  if (!found) {
+    throw new Error(`Schema file ${file} not found in candidates: ${candidates.join(', ')}`);
   }
+  return found;
+}
 
-  console.log(`[MIGRATION] Reading schema file from: ${sqlPath}`);
-  const sql = fs.readFileSync(sqlPath, 'utf8');
-  console.log('[MIGRATION] Applying schema and GIN trigram indexes to PostgreSQL...');
-  
-  await query(sql);
+export async function runMigration(): Promise<void> {
+  for (const file of MIGRATION_FILES) {
+    const sqlPath = locate(file);
+    console.log(`[MIGRATION] Applying ${file} (${sqlPath})`);
+    await query(fs.readFileSync(sqlPath, 'utf8'));
+  }
   console.log('[MIGRATION] Schema successfully initialized!');
 }
 

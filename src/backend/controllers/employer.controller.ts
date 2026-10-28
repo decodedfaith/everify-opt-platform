@@ -68,10 +68,11 @@ export function createExpressSearchHandler(employerService: EmployerService) {
     const state = typeof req.query.state === 'string' ? req.query.state.trim().toUpperCase() : undefined;
     const limit = Math.min(Math.max(1, parseInt(req.query.limit as string, 10) || 20), 100);
     const page = Math.max(1, parseInt(req.query.page as string, 10) || 1);
+    const hiringOnly = req.query.hiring === '1' || req.query.hiring === 'true';
 
     try {
-      const result = await employerService.search({ q, state, limit, page });
-      res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+      const result = await employerService.search({ q, state, limit, page, hiringOnly });
+      res.setHeader('Cache-Control', 'public, max-age=30, stale-while-revalidate=120');
       res.json(result);
     } catch (error) {
       console.error('[API ERROR] Failed to process search request:', error);

@@ -16,6 +16,8 @@ import { runStreamingETL } from '../etl/etl';
 import { EmployerRepository } from './repositories/employer.repository';
 import { EmployerService } from './services/employer.service';
 import { createExpressSearchHandler } from './controllers/employer.controller';
+import { registerEnrichmentRoutes } from './routes/enrichment.routes';
+import { startAutopilot } from '../enrichment/enrich-service';
 import { checkDatabaseConnection, closeDatabasePool, query } from '../common/database';
 import { runMigration } from '../etl/init-db';
 import { syncScheduler } from '../sync/sync-scheduler';
@@ -35,7 +37,7 @@ app.use(express.json());
 // Enable CORS for frontend integration
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
@@ -111,6 +113,9 @@ app.post('/api/sync', async (_req: Request, res: Response) => {
   });
 });
 
+// Enrichment & Hiring API Endpoints
+registerEnrichmentRoutes(app);
+
 // Global Error Handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('[UNHANDLED ERROR]:', err);
@@ -162,6 +167,9 @@ async function bootstrap() {
 
     // Start daily background synchronization scheduler (2:15 AM ET daily refresh)
     syncScheduler.startScheduler();
+
+    // Start background enrichment autopilot (seeds high-priority companies, refreshes jobs)
+    startAutopilot();
   });
 
   // Graceful shutdown handling

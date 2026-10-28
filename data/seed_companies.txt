@@ -1,0 +1,133 @@
+# Seed list: well-known employers students look for. The enrichment runner
+# matches each name against the REAL E-Verify list (name/DBA prefix match) and
+# only enriches ones that are actually enrolled. Edit freely.
+Stripe
+Airbnb
+Databricks
+Snowflake
+Palantir
+NVIDIA
+Cloudflare
+Figma
+Datadog
+Coinbase
+Robinhood
+Instacart
+DoorDash
+Lyft
+Uber
+Pinterest
+Reddit
+Discord
+Dropbox
+Block, Inc
+Square
+Twilio
+Okta
+MongoDB
+Elastic
+HashiCorp
+GitLab
+Asana
+Atlassian
+Zillow
+Etsy
+Shopify
+Squarespace
+Peloton
+Roblox
+Epic Games
+Unity Technologies
+Rivian
+Lucid
+Waymo
+Cruise
+SpaceX
+Space Exploration Technologies
+Anduril
+Plaid
+Brex
+Ramp
+Chime
+SoFi
+Affirm
+Toast
+Samsara
+Rubrik
+Confluent
+Splunk
+ServiceNow
+Workday
+Salesforce
+Adobe
+Intuit
+Autodesk
+Cisco
+Intel
+Qualcomm
+Broadcom
+AMD
+Micron
+Texas Instruments
+Analog Devices
+Western Digital
+Netflix
+Spotify
+Meta Platforms
+Google
+Microsoft
+Amazon
+Apple
+Tesla
+Oracle
+IBM
+Dell
+HP Inc
+VMware
+Zoom Video
+Slack
+Box, Inc
+DocuSign
+HubSpot
+Zendesk
+Yelp
+Grubhub
+Opendoor
+Carvana
+Wayfair
+Chewy
+Warby Parker
+Allbirds
+Goldman Sachs
+JPMorgan
+Morgan Stanley
+Citadel
+Jane Street
+Two Sigma
+Bloomberg
+BlackRock
+Capital One
+American Express
+Visa
+Mastercard
+PayPal
+Moderna
+Pfizer
+Johnson & Johnson
+Genentech
+Illumina
+Regeneron
+Lockheed Martin
+Boeing
+Raytheon
+Northrop Grumman
+General Motors
+Ford Motor
+Deloitte
+Accenture
+McKinsey
+Boston Consulting
+Palo Alto Networks
+CrowdStrike
+Zscaler
+Fortinet
